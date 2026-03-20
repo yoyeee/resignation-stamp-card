@@ -13,8 +13,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-rage-bg flex items-center justify-center p-4">
-      <div className="bg-rage-card border-2 border-rage-border rounded-3xl shadow-2xl p-8 w-full max-w-sm text-center animate-fadeIn"
-           style={{ boxShadow: '0 0 30px rgba(139,0,0,0.3)' }}>
+      <div className="bg-rage-card border-2 rounded-3xl p-8 w-full max-w-sm text-center animate-fadeIn"
+           style={{ borderColor: '#CC2222', boxShadow: '0 0 60px rgba(255,51,51,0.35), 0 0 20px rgba(180,0,0,0.5)' }}>
 
         {/* Logo */}
         <div className="text-7xl mb-4">💢</div>
