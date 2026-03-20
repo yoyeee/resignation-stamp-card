@@ -51,11 +51,10 @@ export default function HomePage({ user }) {
 
   // 儲存目標格數到 Firestore
   const handleGoalChange = async (newGoal) => {
-    const parsed = parseInt(newGoal, 10)
-    if (isNaN(parsed) || parsed < 1) return
-    setGoal(parsed)
+    const clamped = Math.max(5, Math.min(50, newGoal))
+    setGoal(clamped)
     setCelebrated(false)
-    await setDoc(settingsRef, { goal: parsed }, { merge: true })
+    await setDoc(settingsRef, { goal: clamped }, { merge: true })
   }
 
   const handleAddStamp = async (stampData) => {
@@ -133,23 +132,16 @@ export default function HomePage({ user }) {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleGoalChange(goal - 1)}
-                disabled={goal <= 1}
+                disabled={goal <= 5}
                 className="w-8 h-8 rounded-full bg-rage-filled border border-rage-border text-rage-accent font-bold text-lg flex items-center justify-center hover:bg-rage-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 −
               </button>
-              <input
-                type="number"
-                min={1}
-                value={goal}
-                onChange={(e) => setGoal(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-                onBlur={(e) => handleGoalChange(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
-                className="w-14 text-center text-lg font-black text-rage-accent bg-rage-filled border border-rage-border rounded-xl px-2 py-1 focus:outline-none focus:border-rage-accent"
-              />
+              <span className="text-lg font-black text-rage-accent w-6 text-center">{goal}</span>
               <button
                 onClick={() => handleGoalChange(goal + 1)}
-                className="w-8 h-8 rounded-full bg-rage-filled border border-rage-border text-rage-accent font-bold text-lg flex items-center justify-center hover:bg-rage-border transition-colors"
+                disabled={goal >= 50}
+                className="w-8 h-8 rounded-full bg-rage-filled border border-rage-border text-rage-accent font-bold text-lg flex items-center justify-center hover:bg-rage-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 ＋
               </button>
