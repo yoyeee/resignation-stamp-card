@@ -13,25 +13,19 @@ export default function CelebrationModal({ onReset, onClose }) {
 
         <div className="space-y-3">
           <a
-            href="https://www.104.com.tw"
+            href="https://www.google.com/search?q=職缺"
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full py-3 rounded-2xl font-black text-white hover:opacity-90 transition-opacity"
             style={{ background: 'linear-gradient(135deg, #8B0000, #CC0000)', boxShadow: '0 4px 15px rgba(139,0,0,0.5)' }}
           >
-            去 104 找下一份工作 →
+            去找下一份工作 →
           </a>
           <button
-            onClick={onReset}
+            onClick={onClose}
             className="w-full py-3 rounded-2xl border-2 border-rage-filled text-gray-500 font-medium hover:border-rage-border transition-colors"
           >
-            再忍一下，重新集點
-          </button>
-          <button
-            onClick={onClose}
-            className="w-full py-2 text-xs text-gray-600 hover:text-gray-400 transition-colors"
-          >
-            先關掉，之後再說
+            先關掉思考一下
           </button>
         </div>
       </div>
