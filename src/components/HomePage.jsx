@@ -49,12 +49,13 @@ export default function HomePage({ user }) {
     }
   }, [stamps.length, goal, celebrated])
 
+  const GOAL_OPTIONS = [5, 10, 20, 30, 50, 100]
+
   // 儲存目標格數到 Firestore
   const handleGoalChange = async (newGoal) => {
-    const clamped = Math.max(5, Math.min(50, newGoal))
-    setGoal(clamped)
+    setGoal(newGoal)
     setCelebrated(false)
-    await setDoc(settingsRef, { goal: clamped }, { merge: true })
+    await setDoc(settingsRef, { goal: newGoal }, { merge: true })
   }
 
   const handleAddStamp = async (stampData) => {
@@ -127,24 +128,24 @@ export default function HomePage({ user }) {
         {/* 設定區 */}
         <div className="bg-rage-card rounded-2xl border border-rage-filled divide-y divide-rage-filled">
           {/* 目標格數 */}
-          <div className="px-5 py-3 flex items-center justify-between">
-            <span className="text-sm text-gray-400">💀 爆發點（目標格數）</span>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => handleGoalChange(goal - 1)}
-                disabled={goal <= 5}
-                className="w-8 h-8 rounded-full bg-rage-filled border border-rage-border text-rage-accent font-bold text-lg flex items-center justify-center hover:bg-rage-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          <div className="px-5 py-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">💀 爆發點（目標格數）</span>
+              <select
+                value={goal}
+                onChange={(e) => {
+                  const val = Number(e.target.value)
+                  if (stamps.length > val) {
+                    if (!window.confirm(`⚠️ 你已蓋了 ${stamps.length} 章，調低到 ${val} 格會超標喔，確定要改嗎？`)) return
+                  }
+                  handleGoalChange(val)
+                }}
+                className="bg-rage-filled border border-rage-border text-rage-accent font-black text-base rounded-xl px-3 py-1 focus:outline-none cursor-pointer"
               >
-                −
-              </button>
-              <span className="text-lg font-black text-rage-accent w-6 text-center">{goal}</span>
-              <button
-                onClick={() => handleGoalChange(goal + 1)}
-                disabled={goal >= 50}
-                className="w-8 h-8 rounded-full bg-rage-filled border border-rage-border text-rage-accent font-bold text-lg flex items-center justify-center hover:bg-rage-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                ＋
-              </button>
+                {GOAL_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>{opt} 格</option>
+                ))}
+              </select>
             </div>
           </div>
 

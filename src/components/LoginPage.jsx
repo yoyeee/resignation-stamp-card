@@ -1,7 +1,46 @@
 import { signInWithPopup } from 'firebase/auth'
 import { auth, googleProvider } from '../firebase'
 
+function isInAppBrowser() {
+  const ua = navigator.userAgent || ''
+  return /Line\/|FBAN|FBAV|Instagram|MicroMessenger|LinkedInApp|Twitter/.test(ua)
+}
+
+function InAppWarning() {
+  const url = window.location.href
+  const copyLink = () => {
+    navigator.clipboard?.writeText(url).then(() => alert('連結已複製！請開啟 Safari 或 Chrome 貼上網址登入 🙏'))
+      .catch(() => alert(`請手動複製此連結並在瀏覽器開啟：\n${url}`))
+  }
+  return (
+    <div className="min-h-screen bg-rage-bg flex items-center justify-center p-4">
+      <div className="bg-rage-card border-2 rounded-3xl p-8 w-full max-w-sm text-center animate-fadeIn"
+           style={{ borderColor: '#CC2222', boxShadow: '0 0 60px rgba(255,51,51,0.35)' }}>
+        <div className="text-6xl mb-4">🚫</div>
+        <h2 className="text-xl font-black text-rage-accent mb-2">無法在此登入</h2>
+        <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+          偵測到你正在使用 <span className="text-rage-accent font-bold">LINE / Facebook</span> 等 App 的內建瀏覽器。<br />
+          Google 登入需要在 <span className="text-white font-bold">Safari 或 Chrome</span> 中開啟。
+        </p>
+        <p className="text-gray-500 text-xs mb-5 leading-relaxed">
+          👆 點右上角選單 → <span className="text-white">「在瀏覽器中開啟」</span><br />
+          或複製連結後自行貼上
+        </p>
+        <button
+          onClick={copyLink}
+          className="w-full py-3 rounded-2xl font-black text-white transition-all"
+          style={{ background: 'linear-gradient(135deg, #8B0000, #CC0000)', boxShadow: '0 4px 15px rgba(139,0,0,0.5)' }}
+        >
+          複製連結 🔗
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function LoginPage() {
+  if (isInAppBrowser()) return <InAppWarning />
+
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider)
