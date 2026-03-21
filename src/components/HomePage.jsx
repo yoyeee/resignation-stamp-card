@@ -13,7 +13,27 @@ import HistoryList from './HistoryList'
 import CelebrationModal from './CelebrationModal'
 import ThemeSwitcher from './ThemeSwitcher'
 
+// ── localStorage helpers（訪客模式）──────────────────────
+function lsKey(uid, key) { return `guest_${key}_${uid}` }
+
+function lsGetStamps(uid) {
+  try { return JSON.parse(localStorage.getItem(lsKey(uid, 'stamps'))) || [] } catch { return [] }
+}
+function lsSaveStamps(uid, stamps) {
+  localStorage.setItem(lsKey(uid, 'stamps'), JSON.stringify(stamps))
+}
+function lsGetGoal(uid) {
+  const v = localStorage.getItem(lsKey(uid, 'goal'))
+  return v ? Number(v) : null
+}
+function lsSaveGoal(uid, goal) {
+  localStorage.setItem(lsKey(uid, 'goal'), String(goal))
+}
+// ─────────────────────────────────────────────────────────
+
 export default function HomePage({ user, themeId, onThemeChange }) {
+  const isGuest = user.isAnonymous
+
   const [stamps, setStamps] = useState([])
   const [goal, setGoal] = useState(DEFAULT_GOAL)
   const [showModal, setShowModal] = useState(false)
@@ -22,20 +42,27 @@ export default function HomePage({ user, themeId, onThemeChange }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
 
-  const stampsRef = collection(db, 'users', user.uid, 'stamps')
-  const settingsRef = doc(db, 'users', user.uid, 'meta', 'settings')
+  const stampsRef = !isGuest ? collection(db, 'users', user.uid, 'stamps') : null
+  const settingsRef = !isGuest ? doc(db, 'users', user.uid, 'meta', 'settings') : null
 
-  // 載入設定（目標格數）
+  // ── 載入設定 ──
   useEffect(() => {
-    getDoc(settingsRef).then((snap) => {
-      if (snap.exists() && snap.data().goal) {
-        setGoal(snap.data().goal)
-      }
-    })
+    if (isGuest) {
+      const g = lsGetGoal(user.uid)
+      if (g) setGoal(g)
+    } else {
+      getDoc(settingsRef).then((snap) => {
+        if (snap.exists() && snap.data().goal) setGoal(snap.data().goal)
+      })
+    }
   }, [user.uid])
 
-  // 即時同步 Firestore 資料
+  // ── 載入 / 同步集點 ──
   useEffect(() => {
+    if (isGuest) {
+      setStamps(lsGetStamps(user.uid))
+      return
+    }
     const q = query(stampsRef, orderBy('createdAt', 'asc'))
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }))
@@ -44,7 +71,7 @@ export default function HomePage({ user, themeId, onThemeChange }) {
     return unsubscribe
   }, [user.uid])
 
-  // 達標時顯示慶祝
+  // ── 達標時顯示慶祝 ──
   useEffect(() => {
     if (stamps.length >= goal && stamps.length > 0 && !celebrated) {
       setShowCelebration(true)
@@ -54,38 +81,73 @@ export default function HomePage({ user, themeId, onThemeChange }) {
 
   const GOAL_OPTIONS = [5, 10, 20, 30, 50, 100]
 
-  // 儲存目標格數到 Firestore
+  // ── 儲存目標格數 ──
   const handleGoalChange = async (newGoal) => {
     setGoal(newGoal)
     setCelebrated(false)
-    await setDoc(settingsRef, { goal: newGoal }, { merge: true })
+    if (isGuest) {
+      lsSaveGoal(user.uid, newGoal)
+    } else {
+      await setDoc(settingsRef, { goal: newGoal }, { merge: true })
+    }
   }
 
+  // ── 新增蓋章 ──
   const handleAddStamp = async (stampData) => {
-    await addDoc(stampsRef, {
-      type: stampData.id,
-      emoji: stampData.emoji,
-      label: stampData.label,
-      description: stampData.description || '',
-      createdAt: stampData.customDate
-        ? Timestamp.fromDate(stampData.customDate)
-        : serverTimestamp(),
-    })
+    if (isGuest) {
+      const newStamp = {
+        id: crypto.randomUUID(),
+        type: stampData.id,
+        emoji: stampData.emoji,
+        label: stampData.label,
+        description: stampData.description || '',
+        createdAt: stampData.customDate
+          ? stampData.customDate.toISOString()
+          : new Date().toISOString(),
+      }
+      const updated = [...stamps, newStamp]
+      setStamps(updated)
+      lsSaveStamps(user.uid, updated)
+    } else {
+      await addDoc(stampsRef, {
+        type: stampData.id,
+        emoji: stampData.emoji,
+        label: stampData.label,
+        description: stampData.description || '',
+        createdAt: stampData.customDate
+          ? Timestamp.fromDate(stampData.customDate)
+          : serverTimestamp(),
+      })
+    }
     setShowModal(false)
   }
 
-  // 刪除單筆蓋章
+  // ── 刪除單筆 ──
   const handleDeleteStamp = async (stampId) => {
-    await deleteDoc(doc(db, 'users', user.uid, 'stamps', stampId))
+    if (isGuest) {
+      const updated = stamps.filter((s) => s.id !== stampId)
+      setStamps(updated)
+      lsSaveStamps(user.uid, updated)
+    } else {
+      await deleteDoc(doc(db, 'users', user.uid, 'stamps', stampId))
+    }
   }
 
+  // ── 清除全部 ──
   const handleReset = async () => {
-    const snapshot = await getDocs(stampsRef)
-    const deletes = snapshot.docs.map((d) => deleteDoc(doc(db, 'users', user.uid, 'stamps', d.id)))
-    await Promise.all(deletes)
+    if (isGuest) {
+      setStamps([])
+      lsSaveStamps(user.uid, [])
+    } else {
+      const snapshot = await getDocs(stampsRef)
+      const deletes = snapshot.docs.map((d) => deleteDoc(doc(db, 'users', user.uid, 'stamps', d.id)))
+      await Promise.all(deletes)
+    }
     setCelebrated(false)
     setShowCelebration(false)
   }
+
+  const displayName = isGuest ? '訪客' : user.displayName?.split(' ')[0]
 
   return (
     <div className="min-h-screen bg-rage-bg">
@@ -93,10 +155,21 @@ export default function HomePage({ user, themeId, onThemeChange }) {
 
       <main className="max-w-xl mx-auto px-4 py-6 space-y-4">
 
+        {/* 訪客警語 */}
+        {isGuest && (
+          <div className="rounded-2xl px-4 py-3 text-xs leading-relaxed animate-fadeIn"
+               style={{ background: 'rgba(120,80,0,0.2)', border: '1px solid rgba(180,120,0,0.4)' }}>
+            <span className="text-yellow-400 font-bold">⚠️ 訪客模式：</span>
+            <span className="text-gray-400">集點只存在這台裝置。清除瀏覽器資料或換裝置後資料將消失，建議改用 </span>
+            <span className="text-yellow-300 font-bold">Google 帳號登入</span>
+            <span className="text-gray-400"> 以永久保存。</span>
+          </div>
+        )}
+
         {/* 問候語 */}
         <div className="text-center py-2 animate-fadeIn">
           <p className="text-gray-500 text-sm">
-            嗨，<span className="text-rage-accent font-bold">{user.displayName?.split(' ')[0]}</span>！今天又被虐了嗎？ 🩸
+            嗨，<span className="text-rage-accent font-bold">{displayName}</span>！今天又被虐了嗎？ 🩸
           </p>
         </div>
 

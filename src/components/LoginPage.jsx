@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { signInWithPopup } from 'firebase/auth'
+import { signInWithPopup, signInAnonymously } from 'firebase/auth'
 import { auth, googleProvider } from '../firebase'
 
 function isInAppBrowser() {
@@ -80,12 +80,23 @@ function InAppWarning() {
 export default function LoginPage() {
   if (isInAppBrowser()) return <InAppWarning />
 
+  const [showAnonWarning, setShowAnonWarning] = useState(false)
+
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider)
     } catch (err) {
       console.error('登入失敗', err)
       alert('登入失敗，請再試一次 😢')
+    }
+  }
+
+  const handleAnonymousLogin = async () => {
+    try {
+      await signInAnonymously(auth)
+    } catch (err) {
+      console.error('訪客登入失敗', err)
+      alert('訪客登入失敗，請再試一次 😢')
     }
   }
 
@@ -129,6 +140,45 @@ export default function LoginPage() {
           </svg>
           使用 Google 帳號登入
         </button>
+
+        {/* 分隔線 */}
+        <div className="flex items-center gap-3 my-4">
+          <div className="flex-1 h-px bg-rage-filled" />
+          <span className="text-xs text-gray-600">或</span>
+          <div className="flex-1 h-px bg-rage-filled" />
+        </div>
+
+        {/* 訪客試用 */}
+        {!showAnonWarning ? (
+          <button
+            onClick={() => setShowAnonWarning(true)}
+            className="w-full py-3 rounded-2xl text-gray-500 text-sm border-2 border-rage-filled hover:border-rage-border hover:text-gray-400 transition-all duration-200"
+          >
+            先試用看看 👀
+          </button>
+        ) : (
+          <div className="border-2 border-yellow-800 rounded-2xl p-4 text-left animate-fadeIn"
+               style={{ background: 'rgba(120,80,0,0.15)' }}>
+            <p className="text-yellow-500 text-xs font-bold mb-1">⚠️ 訪客模式注意事項</p>
+            <p className="text-gray-400 text-xs leading-relaxed mb-3">
+              資料存在這台裝置上。清除瀏覽器資料、換裝置或換瀏覽器後，<span className="text-yellow-400 font-bold">集點記錄將永久消失</span>，無法恢復。
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowAnonWarning(false)}
+                className="flex-1 py-2 rounded-xl text-xs text-gray-500 border border-rage-filled hover:border-rage-border transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleAnonymousLogin}
+                className="flex-1 py-2 rounded-xl text-xs text-yellow-400 border border-yellow-800 hover:bg-yellow-900/20 transition-colors font-bold"
+              >
+                我了解，繼續試用
+              </button>
+            </div>
+          </div>
+        )}
 
         <p className="text-xs text-gray-600 mt-4">登入即表示你同意用這個 app 發洩上班怒火 😤</p>
       </div>

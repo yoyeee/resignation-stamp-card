@@ -23,7 +23,7 @@ export default function Header({ user }) {
             />
           )}
           <span className="text-sm text-gray-300 hidden sm:block">
-            {user.displayName?.split(' ')[0]}
+            {user.isAnonymous ? '訪客' : user.displayName?.split(' ')[0]}
           </span>
           <button
             onClick={handleLogout}
