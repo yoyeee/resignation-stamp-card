@@ -93,13 +93,13 @@ export default function AddStampModal({ onAdd, onClose }) {
           </button>
 
           {isBackdate && (
-            <div className="mt-2 animate-fadeIn">
+            <div className="mt-2 animate-fadeIn overflow-hidden">
               <input
                 type="date"
                 value={backdateValue}
                 max={getLocalDateValue()}
                 onChange={(e) => setBackdateValue(e.target.value)}
-                className="w-full border-2 border-rage-border rounded-2xl px-4 py-2 text-sm focus:outline-none bg-rage-filled text-gray-200"
+                className="w-full max-w-full block border-2 border-rage-border rounded-2xl px-4 py-2 text-sm focus:outline-none bg-rage-filled text-gray-200 box-border"
               />
               <p className="text-xs text-gray-600 mt-1 ml-1">選擇當時發生的日期</p>
             </div>
