@@ -69,7 +69,7 @@ export const THEMES = [
   },
 ]
 
-export const DEFAULT_THEME_ID = 'rage'
+export const DEFAULT_THEME_ID = 'minimal'
 export const getTheme = (id) => THEMES.find((t) => t.id === id) ?? THEMES[0]
 
 export function applyTheme(id) {
