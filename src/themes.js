@@ -67,23 +67,6 @@ export const THEMES = [
       '--t-muted':  '#93c5fd',
     },
   },
-  {
-    id: 'matcha',
-    name: '抹茶風',
-    emoji: '🍵',
-    desc: '喝再多抹茶都壓不住的怒',
-    preview: ['#0d1a0d', '#3a7a3a', '#5acc5a'],
-    light: false,
-    vars: {
-      '--t-bg':     '#0d1a0d',
-      '--t-card':   '#0f2a0f',
-      '--t-slot':   '#0a150a',
-      '--t-filled': '#1a3a1a',
-      '--t-border': '#3a7a3a',
-      '--t-accent': '#5acc5a',
-      '--t-muted':  '#4aaa4a',
-    },
-  },
 ]
 
 export const DEFAULT_THEME_ID = 'rage'

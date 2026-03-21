@@ -128,6 +128,12 @@ export default function HomePage({ user, themeId, onThemeChange }) {
 
         {/* 設定區 */}
         <div className="bg-rage-card rounded-2xl border border-rage-filled divide-y divide-rage-filled">
+
+          {/* 標題 */}
+          <div className="px-5 py-3">
+            <span className="text-sm font-bold text-gray-400">⚙️ 設定</span>
+          </div>
+
           {/* 目標格數 */}
           <div className="px-5 py-3">
             <div className="flex items-center justify-between">
@@ -150,6 +156,12 @@ export default function HomePage({ user, themeId, onThemeChange }) {
             </div>
           </div>
 
+          {/* 視覺風格 */}
+          <div className="px-5 py-4">
+            <p className="text-sm text-gray-400 mb-3">🎨 視覺風格</p>
+            <ThemeSwitcher themeId={themeId} onChange={onThemeChange} />
+          </div>
+
           {/* 清除按鈕 */}
           {stamps.length > 0 && (
             <button
@@ -160,9 +172,6 @@ export default function HomePage({ user, themeId, onThemeChange }) {
             </button>
           )}
         </div>
-
-        {/* 視覺風格 */}
-        <ThemeSwitcher themeId={themeId} onChange={onThemeChange} />
 
       </main>
 
