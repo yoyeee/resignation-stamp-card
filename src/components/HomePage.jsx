@@ -106,7 +106,7 @@ export default function HomePage({ user }) {
           className="w-full py-4 rounded-3xl text-white font-black text-lg active:scale-95 transition-all duration-200"
           style={{ background: 'linear-gradient(135deg, #8B0000, #CC0000)', boxShadow: '0 4px 20px rgba(139,0,0,0.5)' }}
         >
-          又他媽的來了 🔥
+          蓋章 🔥
         </button>
 
         {/* 統計小卡 */}
