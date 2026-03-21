@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { STAMP_TYPES } from '../constants'
 
-function getLocalDatetimeValue(date = new Date()) {
+function getLocalDateValue(date = new Date()) {
   const pad = (n) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
 export default function AddStampModal({ onAdd, onClose }) {
   const [selected, setSelected] = useState(null)
   const [description, setDescription] = useState('')
   const [isBackdate, setIsBackdate] = useState(false)
-  const [backdateValue, setBackdateValue] = useState(getLocalDatetimeValue())
+  const [backdateValue, setBackdateValue] = useState(getLocalDateValue())
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async () => {
@@ -20,7 +20,7 @@ export default function AddStampModal({ onAdd, onClose }) {
       return
     }
     setLoading(true)
-    const customDate = isBackdate ? new Date(backdateValue) : null
+    const customDate = isBackdate ? new Date(backdateValue + 'T12:00:00') : null
     await onAdd({ ...selected, description: description.trim(), customDate })
     setLoading(false)
   }
@@ -95,13 +95,13 @@ export default function AddStampModal({ onAdd, onClose }) {
           {isBackdate && (
             <div className="mt-2 animate-fadeIn">
               <input
-                type="datetime-local"
+                type="date"
                 value={backdateValue}
-                max={getLocalDatetimeValue()}
+                max={getLocalDateValue()}
                 onChange={(e) => setBackdateValue(e.target.value)}
                 className="w-full border-2 border-rage-border rounded-2xl px-4 py-2 text-sm focus:outline-none bg-rage-filled text-gray-200"
               />
-              <p className="text-xs text-gray-600 mt-1 ml-1">選擇當時發生的日期與時間</p>
+              <p className="text-xs text-gray-600 mt-1 ml-1">選擇當時發生的日期</p>
             </div>
           )}
         </div>
